@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "confirm": {
+        "description": "[%key:common::config_flow::description::confirm_setup%]"
+      },
+      "user": {
+        "data": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "ip_address": "[%key:common::config_flow::data::ip%]"
+        },
+        "title": "Configure Watergate Device",
+        "description": "Please put name and IP address of your Watergate device"
+      },
+      "reconfigure": {
+        "data": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "ip_address": "[%key:common::config_flow::data::ip%]"
+        },
+        "title": "Configure Watergate Device",
+        "description": "Please put name and IP address of your Watergate device"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]",
+      "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]"
+    }
+  }
+}
