@@ -46,7 +46,7 @@
         "state": {
           "battery": "Battery",
           "external": "Mains",
-          "battery_external": "Battery and mains"
+          "external_battery": "Battery and mains"
         }
       }
     }

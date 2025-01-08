@@ -40,7 +40,7 @@ class PowerSupplyMode(StrEnum):
 
     BATTERY = "battery"
     EXTERNAL = "external"
-    BATTERY_EXTERNAL = "battery_external"
+    EXTERNAL_BATTERY = "external_battery"
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -90,7 +90,7 @@ DESCRIPTIONS: list[WatergateSensorEntityDescription] = [
     WatergateSensorEntityDescription(
         value_fn=lambda data: (
             dt_util.as_utc(
-                dt_util.now() - timedelta(microseconds=data.networking.wifi_uptime)
+                dt_util.now() - timedelta(milliseconds=data.networking.wifi_uptime)
             )
             if data.networking
             else None
@@ -104,7 +104,7 @@ DESCRIPTIONS: list[WatergateSensorEntityDescription] = [
     WatergateSensorEntityDescription(
         value_fn=lambda data: (
             dt_util.as_utc(
-                dt_util.now() - timedelta(microseconds=data.networking.mqtt_uptime)
+                dt_util.now() - timedelta(milliseconds=data.networking.mqtt_uptime)
             )
             if data.networking
             else None
