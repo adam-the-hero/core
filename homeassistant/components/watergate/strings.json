@@ -19,6 +19,11 @@
     }
   },
   "entity": {
+    "button": {
+      "reboot": {
+        "name": "Reboot"
+      }
+    },
     "event": {
       "auto_shut_off_duration": {
         "name": "Duration auto shut-off",
@@ -109,6 +114,9 @@
   "exceptions": {
     "auto_shut_off_update_failed": {
       "message": "Failed to update auto shut-off"
+    },
+    "reboot_failed": {
+      "message": "Failed to reboot the device"
     },
     "valve_action_failed": {
       "message": "Failed to change the valve state"
