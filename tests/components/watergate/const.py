@@ -3,6 +3,7 @@
 from watergate_local_api.models import (
     DeviceState,
     DeviceStateV2,
+    DeviceStateV3,
     NetworkingData,
     TelemetryData,
 )
@@ -44,6 +45,22 @@ DEFAULT_DEVICE_STATE_V2 = DeviceStateV2(
     water_meter_negative=WaterMeter(0.3, 25),
     serial_number=DEFAULT_SERIAL_NUMBER,
 )
+
+DEFAULT_DEVICE_STATE_V3 = DeviceStateV3(
+    valve_state="open",
+    water_flow_indicator="on",
+    mqtt_status=True,
+    wifi_status=True,
+    power_supply="battery",
+    firmware_version="1.0.0",
+    uptime=100,
+    water_meter_positive=WaterMeter(1.2, 100),
+    water_meter_negative=WaterMeter(0.3, 25),
+    serial_number=DEFAULT_SERIAL_NUMBER,
+    buzzer_playing=False,
+)
+
+DEFAULT_BUZZER_SOUNDS = ["beep", "christmas_1", "christmas_2"]
 
 DEFAULT_NETWORKING_STATE = NetworkingData(
     True,

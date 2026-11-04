@@ -20,14 +20,15 @@ from watergate_local_api.models import TelemetryData
 from homeassistant.components.valve import ValveState
 from homeassistant.components.watergate.const import DOMAIN
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import STATE_ON, STATE_UNAVAILABLE
+from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from . import init_integration
-from .const import DEFAULT_DEVICE_STATE_V2, MOCK_WEBHOOK_ID
+from .const import DEFAULT_DEVICE_STATE_V3, MOCK_WEBHOOK_ID
 
 NEGATIVE_VOLUME_ENTITY_ID = "sensor.sonic_water_meter_negative_volume"
+BUZZER_ENTITY_ID = "siren.sonic_buzzer"
 
 
 async def test_async_setup_entry(
@@ -187,7 +188,9 @@ async def test_device_state_v2_is_not_probed_again_after_falling_back(
     async_fire_time_changed(hass)
     await hass.async_block_till_done()
 
-    assert mock_watergate_client.async_get_device_state_v2.call_count == 2
+    # Probed (v3 twice, v2 once) while reading v1 on the first update, then v1 only.
+    assert mock_watergate_client.async_get_device_state_v3.call_count == 2
+    assert mock_watergate_client.async_get_device_state_v2.call_count == 1
     assert mock_watergate_client.async_get_device_state.call_count == 2
 
 
@@ -219,21 +222,95 @@ async def test_unreachable_device_does_not_fall_back_to_device_state_v1(
     assert hass.states.get(NEGATIVE_VOLUME_ENTITY_ID).state == "0.3"
 
 
-async def test_device_state_v2_survives_a_blip_that_ends_during_the_first_update(
+async def test_device_state_v3_survives_a_blip_that_ends_during_the_first_update(
     hass: HomeAssistant,
-    mock_watergate_client: Generator[AsyncMock],
+    buzzer_device: AsyncMock,
     mock_entry: MockConfigEntry,
 ) -> None:
-    """Test that v2 is kept when the device is back by the time v1 is read."""
-    mock_watergate_client.async_get_device_state_v2.side_effect = [
+    """Test that v3 is kept when the device is back by the time v1 is read."""
+    buzzer_device.async_get_device_state_v3.side_effect = [
         WatergateApiException("blip"),
-        DEFAULT_DEVICE_STATE_V2,
+        DEFAULT_DEVICE_STATE_V3,
     ]
 
     await init_integration(hass, mock_entry)
 
+    assert hass.states.get(BUZZER_ENTITY_ID).state == STATE_OFF
+    assert buzzer_device.async_get_device_state_v3.call_count == 2
+
+
+async def test_device_state_v3_is_preferred(
+    hass: HomeAssistant,
+    buzzer_device: AsyncMock,
+    mock_entry: MockConfigEntry,
+) -> None:
+    """Test that a device with device state v3 is read in v3 only."""
+    await init_integration(hass, mock_entry)
+
+    buzzer_device.async_get_device_state_v3.assert_awaited_once_with()
+    buzzer_device.async_get_device_state_v2.assert_not_called()
+    buzzer_device.async_get_device_state.assert_not_called()
     assert hass.states.get(NEGATIVE_VOLUME_ENTITY_ID).state == "0.3"
+
+
+async def test_device_state_v2_is_used_without_device_state_v3(
+    hass: HomeAssistant,
+    mock_watergate_client: Generator[AsyncMock],
+    mock_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """Test that v3 is not probed on every update once the firmware has rejected it."""
+    await init_integration(hass, mock_entry)
+
+    freezer.tick(timedelta(minutes=2, seconds=1))
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done()
+
+    assert hass.states.get(NEGATIVE_VOLUME_ENTITY_ID).state == "0.3"
+    assert hass.states.get(BUZZER_ENTITY_ID) is None
+    assert mock_watergate_client.async_get_device_state_v3.call_count == 2
     assert mock_watergate_client.async_get_device_state_v2.call_count == 2
+    mock_watergate_client.async_get_device_state.assert_called_once_with()
+    mock_watergate_client.async_get_buzzer_sounds.assert_not_called()
+
+
+async def test_unreachable_device_does_not_fall_back_from_device_state_v3(
+    hass: HomeAssistant,
+    buzzer_device: AsyncMock,
+    mock_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """Test that an update failing while the device is offline keeps v3 in use."""
+    await init_integration(hass, mock_entry)
+
+    buzzer_device.async_get_device_state_v3.side_effect = WatergateApiException("boom")
+    freezer.tick(timedelta(minutes=2, seconds=1))
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done()
+
+    assert hass.states.get(BUZZER_ENTITY_ID).state == STATE_UNAVAILABLE
+    buzzer_device.async_get_device_state_v2.assert_not_called()
+    buzzer_device.async_get_device_state.assert_not_called()
+
+    buzzer_device.async_get_device_state_v3.side_effect = None
+    freezer.tick(timedelta(minutes=2, seconds=1))
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done()
+
+    assert hass.states.get(BUZZER_ENTITY_ID).state == STATE_OFF
+
+
+async def test_setup_retry_when_buzzer_sounds_unavailable(
+    hass: HomeAssistant,
+    buzzer_device: AsyncMock,
+    mock_entry: MockConfigEntry,
+) -> None:
+    """Test that failing to read the sounds of the buzzer fails the update."""
+    buzzer_device.async_get_buzzer_sounds.side_effect = WatergateApiException("boom")
+
+    await init_integration(hass, mock_entry)
+
+    assert mock_entry.state is ConfigEntryState.SETUP_RETRY
 
 
 async def test_confirmed_device_state_v2_is_never_downgraded(

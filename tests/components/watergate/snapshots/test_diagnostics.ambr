@@ -41,6 +41,7 @@
         'wifi_uptime': 2137,
       }),
       'state': dict({
+        'buzzer_playing': None,
         'firmware_version': '1.0.0',
         'mqtt_status': True,
         'power_supply': 'battery',

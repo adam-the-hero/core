@@ -4,7 +4,7 @@ from typing import Any
 
 from watergate_local_api.models import (
     AutoShutOffState,
-    DeviceStateV2,
+    DeviceStateV3,
     NetworkingData,
     TelemetryData,
 )
@@ -36,10 +36,11 @@ def _water_meter(meter: WaterMeter | None) -> dict[str, Any] | None:
     return {"volume": meter.volume, "duration": meter.duration} if meter else None
 
 
-def _device_state(state: DeviceStateV2 | None) -> dict[str, Any] | None:
+def _device_state(state: DeviceStateV3 | None) -> dict[str, Any] | None:
     """Return the device state as a dict.
 
-    A device without device state v2 may report no state at all.
+    A device without device state v3 reports no buzzer state, and one without
+    device state v2 may report no state at all.
     """
     if state is None:
         return None
@@ -54,6 +55,7 @@ def _device_state(state: DeviceStateV2 | None) -> dict[str, Any] | None:
         "water_meter_positive": _water_meter(state.water_meter_positive),
         "water_meter_negative": _water_meter(state.water_meter_negative),
         "serial_number": state.serial_number,
+        "buzzer_playing": state.buzzer_playing,
     }
 
 

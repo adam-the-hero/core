@@ -126,6 +126,11 @@
         "name": "Wi-Fi up since"
       }
     },
+    "siren": {
+      "buzzer": {
+        "name": "Buzzer"
+      }
+    },
     "switch": {
       "auto_shut_off": {
         "name": "Auto shut-off"
@@ -135,6 +140,9 @@
   "exceptions": {
     "auto_shut_off_update_failed": {
       "message": "Failed to update auto shut-off"
+    },
+    "buzzer_failed": {
+      "message": "Failed to control the buzzer"
     },
     "device_unavailable": {
       "message": "Sonic device is unavailable"

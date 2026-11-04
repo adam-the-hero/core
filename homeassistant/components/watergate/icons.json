@@ -7,6 +7,11 @@
       "auto_shut_off_volume": {
         "default": "mdi:water"
       }
+    },
+    "siren": {
+      "buzzer": {
+        "default": "mdi:bullhorn"
+      }
     }
   }
 }

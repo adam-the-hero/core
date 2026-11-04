@@ -1,0 +1,63 @@
+# serializer version: 1
+# name: test_entities[siren.sonic_buzzer-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      <SirenEntityCapabilityAttribute.AVAILABLE_TONES: 'available_tones'>: list([
+        'beep',
+        'christmas_1',
+        'christmas_2',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': None,
+    'device_class': None,
+    'device_id': <DeviceEntry identifiers=[('watergate', 'a63182948ce2896a')]>,
+    'disabled_by': None,
+    'domain': 'siren',
+    'entity_category': None,
+    'entity_id': 'siren.sonic_buzzer',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Buzzer',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Buzzer',
+    'platform': 'watergate',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': <SirenEntityFeature: 7>,
+    'translation_key': 'buzzer',
+    'unique_id': 'a63182948ce2896a.buzzer',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_entities[siren.sonic_buzzer-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <SirenEntityCapabilityAttribute.AVAILABLE_TONES: 'available_tones'>: list([
+        'beep',
+        'christmas_1',
+        'christmas_2',
+      ]),
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Sonic Buzzer',
+      <EntityStateAttribute.SUPPORTED_FEATURES: 'supported_features'>: <SirenEntityFeature: 7>,
+    }),
+    'context': <ANY>,
+    'entity_id': 'siren.sonic_buzzer',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'off',
+  })
+# ---
