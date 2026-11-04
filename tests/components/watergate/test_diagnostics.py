@@ -124,3 +124,17 @@ async def test_diagnostics_without_coordinator_data(
     assert result["data"] is None
     assert result["last_update_success"] is False
     assert result["config_entry"]["data"]["ip_address"] == "**REDACTED**"
+
+
+async def test_diagnostics_with_buzzer(
+    hass: HomeAssistant,
+    hass_client: ClientSessionGenerator,
+    mock_entry: MockConfigEntry,
+    buzzer_device: AsyncMock,
+) -> None:
+    """Test diagnostics of a device that reports the state of its buzzer."""
+    await init_integration(hass, mock_entry)
+
+    result = await get_diagnostics_for_config_entry(hass, hass_client, mock_entry)
+
+    assert result["data"]["state"]["buzzer_playing"] is False

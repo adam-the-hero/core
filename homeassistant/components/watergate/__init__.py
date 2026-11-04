@@ -40,6 +40,7 @@ PLATFORMS: list[Platform] = [
     Platform.EVENT,
     Platform.NUMBER,
     Platform.SENSOR,
+    Platform.SIREN,
     Platform.SWITCH,
     Platform.VALVE,
 ]

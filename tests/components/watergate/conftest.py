@@ -5,14 +5,17 @@ from copy import deepcopy
 
 import pytest
 from pytest_homeassistant.common import AsyncMock, MockConfigEntry, patch
-from watergate_local_api.models import AutoShutOffState
+from watergate_local_api import WatergateApiException
+from watergate_local_api.models import AutoShutOffState, BuzzerSounds
 
 from homeassistant.components.watergate.const import DOMAIN
 from homeassistant.const import CONF_IP_ADDRESS
 
 from .const import (
+    DEFAULT_BUZZER_SOUNDS,
     DEFAULT_DEVICE_STATE,
     DEFAULT_DEVICE_STATE_V2,
+    DEFAULT_DEVICE_STATE_V3,
     DEFAULT_NETWORKING_STATE,
     DEFAULT_SERIAL_NUMBER,
     DEFAULT_TELEMETRY_STATE,
@@ -46,6 +49,15 @@ def mock_watergate_client() -> Generator[AsyncMock]:
         mock_client_instance.async_get_device_state_v2 = AsyncMock(
             return_value=deepcopy(DEFAULT_DEVICE_STATE_V2)
         )
+        # By default the device is firmware without device state v3 (and so no buzzer):
+        # tests of the buzzer make v3 answer, see the `buzzer_device` fixture.
+        mock_client_instance.async_get_device_state_v3 = AsyncMock(
+            side_effect=WatergateApiException("Unsupported media type")
+        )
+        mock_client_instance.async_get_buzzer_sounds = AsyncMock(
+            return_value=BuzzerSounds(list(DEFAULT_BUZZER_SOUNDS))
+        )
+        mock_client_instance.async_control_buzzer = AsyncMock(return_value=True)
         mock_client_instance.async_get_networking = AsyncMock(
             return_value=deepcopy(DEFAULT_NETWORKING_STATE)
         )
@@ -56,6 +68,16 @@ def mock_watergate_client() -> Generator[AsyncMock]:
             return_value=AutoShutOffState(True, 1000, 60)
         )
         yield mock_client_instance
+
+
+@pytest.fixture
+def buzzer_device(mock_watergate_client: AsyncMock) -> AsyncMock:
+    """Make the mocked device report device state v3, i.e. a device with a buzzer."""
+    mock_watergate_client.async_get_device_state_v3.side_effect = None
+    mock_watergate_client.async_get_device_state_v3.return_value = deepcopy(
+        DEFAULT_DEVICE_STATE_V3
+    )
+    return mock_watergate_client
 
 
 @pytest.fixture
